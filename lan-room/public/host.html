@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作息博弈 · 裁判席</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap wide">
+  <div class="hud">
+    <div class="brand">
+      <div class="t1">裁判席 · 上帝视角</div>
+      <div class="t2">OBSERVER CHANNEL · 不要给座位上的玩家看</div>
+    </div>
+    <div>
+      <div class="daytag" id="day">DAY 01</div>
+      <div class="bigclock" id="clock">00:00</div>
+      <div class="prog" id="progress">0 / 720 h</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span>手机入口（同一 Wi‑Fi，浏览器打开，不用装 App）</span></div>
+    <div id="urls"></div>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn-ghost" type="button" id="btnCopyA">复制 A 链接</button>
+      <button class="btn-ghost" type="button" id="btnCopyB">复制 B 链接</button>
+      <button class="btn-god" type="button" id="btnReset">重置本局</button>
+      <button class="btn-ghost" type="button" id="btnKickA">踢掉 A</button>
+      <button class="btn-ghost" type="button" id="btnKickB">踢掉 B</button>
+    </div>
+    <p class="hint" id="copyHint"></p>
+  </div>
+
+  <div class="panel">
+    <div class="grid2">
+      <div class="st"><span class="k">A 在线</span><span class="v" id="onlineA">否</span></div>
+      <div class="st"><span class="k">B 在线</span><span class="v" id="onlineB">否</span></div>
+      <div class="st"><span class="k">A 本小时</span><span class="v" id="lockA">等待锁定</span></div>
+      <div class="st"><span class="k">B 本小时</span><span class="v" id="lockB">等待锁定</span></div>
+    </div>
+  </div>
+
+  <section class="god">
+    <div class="god-kicker">CLASSIFIED</div>
+    <div class="god-title">双方真实盘面</div>
+    <div class="god-stats" id="godStats"></div>
+    <div class="panel-head"><span>B 真实动作</span></div>
+    <div class="timeline" id="tlB"></div>
+    <div class="panel-head" style="margin-top:12px"><span>A 真实动作</span></div>
+    <div class="timeline" id="tlA"></div>
+    <div class="god-table-wrap">
+      <table class="god-table" id="godTable"></table>
+    </div>
+  </section>
+</div>
+<script src="/host.js"></script>
+</body>
+</html>

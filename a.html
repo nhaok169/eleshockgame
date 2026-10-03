@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>双智能体作息博弈 · 控制面板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #06080f;
+    --bg-2: #0b1020;
+    --panel: rgba(12, 18, 32, 0.82);
+    --panel-solid: #10182a;
+    --border: rgba(94, 234, 212, 0.14);
+    --cyan: #5eead4;
+    --cyan-2: #22d3ee;
+    --purple: #c4b5fd;
+    --green: #4ade80;
+    --red: #fb7185;
+    --amber: #fbbf24;
+    --text: #d7e3f4;
+    --dim: #8b9bb3;
+    --dimmer: #445166;
+    --god: #f59e0b;
+    --god-bg: rgba(45, 24, 8, 0.55);
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    background:
+      radial-gradient(ellipse 90% 50% at 8% -10%, rgba(34, 211, 238, 0.16), transparent 50%),
+      radial-gradient(ellipse 70% 45% at 100% 0%, rgba(167, 139, 250, 0.14), transparent 48%),
+      radial-gradient(ellipse 60% 40% at 70% 110%, rgba(245, 158, 11, 0.08), transparent 50%),
+      var(--bg);
+    background-attachment: fixed;
+    padding: 28px 18px 72px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body::before {
+    content: '';
+    pointer-events: none;
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(94, 234, 212, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(94, 234, 212, 0.035) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at center, black 30%, transparent 78%);
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
+
+  .mono { font-family: 'IBM Plex Mono', Consolas, monospace; }
+
+  /* ---------- HUD ---------- */
+  .hud {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; flex-wrap: wrap;
+    padding: 20px 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    backdrop-filter: blur(18px);
+    margin-bottom: 16px;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .brand { display: flex; flex-direction: column; gap: 5px; }
+  .brand .t1 {
+    font-size: 20px; letter-spacing: 2px; color: #eafcff; font-weight: 700;
+    text-shadow: 0 0 18px rgba(34, 211, 238, 0.45);
+  }
+  .brand .t2 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--dim); letter-spacing: 2px;
+  }
+  .clockbox { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .daytag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; letter-spacing: 2px; color: var(--purple);
+    border: 1px solid rgba(196, 181, 253, 0.35);
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(167, 139, 250, 0.1);
+  }
+  .bigclock {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 36px; font-weight: 700; color: #eafcff; letter-spacing: 2px;
+    text-shadow: 0 0 22px rgba(34, 211, 238, 0.55);
+    font-variant-numeric: tabular-nums;
+  }
+  .prog {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: var(--dim); letter-spacing: 1px;
+  }
+
+  /* ---------- Panels ---------- */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px 18px;
+    margin-bottom: 16px;
+    backdrop-filter: blur(18px);
+    box-shadow: var(--shadow);
+  }
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+    font-size: 12px; letter-spacing: 1.5px; color: var(--dim);
+    margin-bottom: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; }
+  .lg { display: flex; align-items: center; gap: 6px; }
+  .lg i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  .lg.s i { background: rgba(74,222,128,0.85); }
+  .lg.i i { background: rgba(100,116,139,0.85); }
+  .lg.c i { background: rgba(251,191,36,0.9); }
+  .lg.f i { background: rgba(74,222,128,1); box-shadow: 0 0 8px rgba(74,222,128,0.8); }
+  .lg.z i { background: #fb7185; }
+
+  .timeline { display: grid; grid-template-columns: repeat(24, 1fr); gap: 4px; }
+  .slot {
+    height: 54px; border-radius: 7px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.55);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 5px;
+    font-size: 11px; color: #64748b;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .slot .sh { font-variant-numeric: tabular-nums; }
+  .slot .dot { width: 7px; height: 7px; border-radius: 50%; background: transparent; }
+  .slot.act-sleep { background: rgba(74,222,128,0.14); border-color: rgba(74,222,128,0.45); color: #86efac; }
+  .slot.act-sleep .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .slot.act-sleep.forced { background: rgba(74,222,128,0.34); border-color: rgba(74,222,128,0.9); }
+  .slot.act-sleep.forced::after {
+    content: '!'; position: absolute; top: 2px; right: 5px;
+    font-size: 11px; color: #fde68a; font-weight: 700;
+  }
+  .slot.act-idle { background: rgba(100,116,139,0.16); border-color: rgba(100,116,139,0.4); color: #94a3b8; }
+  .slot.act-idle .dot { background: #64748b; }
+  .slot.act-scout { background: rgba(251,191,36,0.14); border-color: rgba(251,191,36,0.45); color: #fcd34d; }
+  .slot.act-scout .dot { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .slot.shocked::before {
+    content: '⚡'; position: absolute; bottom: 1px; right: 3px; font-size: 9px;
+  }
+  .slot.now {
+    box-shadow: 0 0 0 2px var(--cyan-2), 0 0 16px rgba(34,211,238,0.5);
+    border-color: var(--cyan-2); animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 2px var(--cyan-2), 0 0 14px rgba(34,211,238,0.45); }
+    50%     { box-shadow: 0 0 0 2px var(--cyan-2), 0 0 24px rgba(34,211,238,0.8); }
+  }
+
+  /* ---------- Agent cards ---------- */
+  .agents { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    backdrop-filter: blur(18px);
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .card.b { border-color: rgba(34, 211, 238, 0.28); }
+  .card.a { border-color: rgba(167, 139, 250, 0.24); }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .card.b::before { background: linear-gradient(90deg, transparent, var(--cyan-2), transparent); }
+  .card.a::before { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
+
+  .card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: grid; place-items: center;
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700;
+  }
+  .card.b .avatar { background: rgba(34,211,238,0.12); color: #a5f3fc; border: 1px solid rgba(34,211,238,0.3); }
+  .card.a .avatar { background: rgba(167,139,250,0.12); color: #ddd6fe; border: 1px solid rgba(167,139,250,0.3); }
+  .cname { font-size: 17px; font-weight: 700; letter-spacing: 1px; }
+  .card.b .cname { color: #a5f3fc; }
+  .card.a .cname { color: #ddd6fe; }
+  .tag {
+    font-size: 10px; padding: 3px 8px; border-radius: 999px; letter-spacing: 1px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .tag.you { background: rgba(34,211,238,0.16); color: var(--cyan-2); border: 1px solid rgba(34,211,238,0.35); }
+  .tag.foe { background: rgba(167,139,250,0.14); color: var(--purple); border: 1px solid rgba(167,139,250,0.32); }
+
+  .shockrow { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .shocklabel { font-size: 12px; color: var(--dim); letter-spacing: 1.4px; }
+  .shockval {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: #fda4af; text-shadow: 0 0 14px rgba(251,113,133,0.45);
+  }
+  .shockval small { font-size: 13px; color: var(--dim); text-shadow: none; font-weight: 400; }
+
+  .pips { display: flex; gap: 3px; margin-bottom: 14px; }
+  .pips i {
+    flex: 1; height: 7px; border-radius: 99px;
+    background: rgba(51,65,85,0.75);
+  }
+  .pips i.on { background: linear-gradient(90deg, #fb7185, #f43f5e); box-shadow: 0 0 8px rgba(251,113,133,0.55); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+  .st {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 14px; padding: 6px 0;
+    border-bottom: 1px dashed rgba(51,65,85,0.5);
+  }
+  .st .k { color: var(--dim); }
+  .st .v { color: #e2e8f0; font-variant-numeric: tabular-nums; font-weight: 600; font-family: 'IBM Plex Mono', monospace; }
+  .st .v.ok { color: var(--green); }
+  .st .v.warn { color: var(--amber); }
+  .st .v.bad { color: var(--red); }
+  .st .v.secret { color: var(--dimmer); letter-spacing: 2px; }
+
+  .sleepbar {
+    margin-top: 14px; background: rgba(30,41,59,0.6);
+    border-radius: 8px; height: 30px; position: relative; overflow: hidden;
+    border: 1px solid rgba(51,65,85,0.7);
+  }
+  .sleepbar > i {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: linear-gradient(90deg, rgba(74,222,128,0.32), rgba(74,222,128,0.58));
+    transition: width 0.35s ease;
+  }
+  .sleepbar.unknown > i { width: 0 !important; background: repeating-linear-gradient(90deg, rgba(100,116,139,0.2), rgba(100,116,139,0.2) 8px, transparent 8px, transparent 16px); }
+  .sleepbar > span {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; letter-spacing: 1.1px; color: #dcfce7;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- Controls ---------- */
+  .ctrl-title { font-size: 12px; letter-spacing: 2px; color: var(--dim); margin-bottom: 12px; font-family: 'IBM Plex Mono', monospace; }
+  .hint {
+    font-size: 12.5px; color: var(--amber); min-height: 1.2em; margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .btnrow { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+  button {
+    font-family: inherit; font-size: 15px; letter-spacing: 0.6px;
+    padding: 11px 20px; border-radius: 10px; cursor: pointer;
+    border: 1px solid; background: transparent;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    color: var(--text); font-weight: 600;
+  }
+  button:hover:not(:disabled) { transform: translateY(-1px); }
+  button:active:not(:disabled) { transform: translateY(0); }
+  button:disabled { opacity: 0.32; cursor: not-allowed; }
+
+  .btn-sleep { border-color: rgba(74,222,128,0.45); color: #86efac; background: rgba(74,222,128,0.08); }
+  .btn-sleep:hover:not(:disabled) { background: rgba(74,222,128,0.18); box-shadow: 0 0 20px rgba(74,222,128,0.25); }
+  .btn-idle { border-color: rgba(100,116,139,0.5); color: #94a3b8; background: rgba(100,116,139,0.08); }
+  .btn-idle:hover:not(:disabled) { background: rgba(100,116,139,0.2); }
+  .btn-scout { border-color: rgba(251,191,36,0.5); color: #fcd34d; background: rgba(251,191,36,0.08); }
+  .btn-scout:hover:not(:disabled) { background: rgba(251,191,36,0.18); box-shadow: 0 0 20px rgba(251,191,36,0.25); }
+  .btn-ghost { border-color: rgba(51,65,85,0.9); color: var(--dim); font-size: 13px; padding: 10px 16px; }
+  .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: rgba(100,116,139,0.9); }
+
+  select {
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px; padding: 11px 12px;
+    border-radius: 10px; background: rgba(30,41,59,0.9);
+    border: 1px solid rgba(74,222,128,0.35); color: #86efac;
+    outline: none; cursor: pointer;
+  }
+
+  /* ---------- Logs ---------- */
+  .log-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+  .logbox {
+    background: rgba(7, 10, 18, 0.92);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; height: 420px; overflow-y: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13.5px; line-height: 1.85;
+    scrollbar-width: thin; scrollbar-color: rgba(51,65,85,0.9) transparent;
+    white-space: pre;
+  }
+  .logbox::-webkit-scrollbar { width: 8px; }
+  .logbox::-webkit-scrollbar-thumb { background: rgba(51,65,85,0.9); border-radius: 4px; }
+  .logline { opacity: 0; animation: fadein 0.22s forwards; }
+  @keyframes fadein { to { opacity: 1; } }
+  .logline.hit  { color: #6ee7b7; }
+  .logline.hurt { color: #fda4af; }
+  .logline.dim  { color: #8896ab; }
+  .logline.day  { color: #c4b5fd; font-weight: 700; letter-spacing: 1px; }
+  .logline.warn { color: #fcd34d; }
+  .logline.hr   { color: #475569; }
+
+  /* ---------- God view ---------- */
+  .god {
+    margin-top: 18px;
+    background:
+      linear-gradient(180deg, rgba(69, 26, 3, 0.22), rgba(12, 10, 6, 0.72)),
+      var(--god-bg);
+    border: 1px solid rgba(245, 158, 11, 0.32);
+    border-radius: 18px;
+    padding: 18px 18px 20px;
+    box-shadow: 0 0 0 1px rgba(245,158,11,0.08), 0 20px 50px rgba(0,0,0,0.35);
+    position: relative;
+    overflow: hidden;
+  }
+  .god::before {
+    content: 'CLASSIFIED';
+    position: absolute; right: 18px; top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 4px; color: rgba(251, 191, 36, 0.35);
+  }
+  .god-kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 2.4px; color: #fcd34d;
+    margin-bottom: 4px;
+  }
+  .god-title { font-size: 18px; font-weight: 700; color: #ffedd5; margin-bottom: 6px; }
+  .god-sub { font-size: 12.5px; color: #fdba74; max-width: 70%; line-height: 1.6; }
+  .god-tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 0 16px; }
+  .god.collapsed .god-body { display: none; }
+  .god-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .gstat {
+    background: rgba(0,0,0,0.28);
+    border: 1px solid rgba(245,158,11,0.18);
+    border-radius: 12px; padding: 10px 12px;
+  }
+  .gstat .gk { font-size: 11px; color: #fdba74; letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; }
+  .gstat .gv { font-size: 18px; font-weight: 700; color: #ffedd5; font-family: 'IBM Plex Mono', monospace; }
+  .god-lane { margin-bottom: 10px; }
+  .god-lane-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: #fdba74; letter-spacing: 1.5px; margin-bottom: 6px;
+  }
+  .god .slot { height: 44px; }
+  .god-table-wrap {
+    margin-top: 12px; overflow: auto;
+    border: 1px solid rgba(245,158,11,0.16);
+    border-radius: 12px;
+    background: rgba(0,0,0,0.28);
+  }
+  table.god-table {
+    width: 100%; border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+  }
+  table.god-table th, table.god-table td {
+    padding: 7px 8px; text-align: center; white-space: nowrap;
+    border-bottom: 1px solid rgba(245,158,11,0.08);
+  }
+  table.god-table th { color: #fdba74; font-weight: 500; position: sticky; top: 0; background: #1a1208; }
+  table.god-table td { color: #ffedd5; }
+  table.god-table tr.shock td { background: rgba(251, 113, 133, 0.08); }
+  table.god-table .muted { color: #9a7b4c; }
+
+  .footer-note {
+    text-align: center; font-size: 12px; color: var(--dimmer);
+    letter-spacing: 0.4px; margin-top: 22px; line-height: 1.9;
+  }
+
+  @media (max-width: 860px) {
+    .agents, .god-stats { grid-template-columns: 1fr 1fr; }
+    .bigclock { font-size: 26px; }
+    .slot { height: 40px; font-size: 9.5px; }
+    .god-sub { max-width: 100%; }
+    .god::before { display: none; }
+  }
+  @media (max-width: 640px) {
+    .agents { grid-template-columns: 1fr; }
+    .god-stats { grid-template-columns: 1fr 1fr; }
+    .timeline { gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hud">
+    <div class="brand">
+      <div class="t1">双智能体作息博弈</div>
+      <div class="t2">FINITE-TIME SLEEP GAMBIT · B PERSPECTIVE</div>
+    </div>
+    <div class="clockbox">
+      <div class="daytag" id="day">DAY 01</div>
+      <div class="bigclock" id="clock">00:00</div>
+      <div class="prog" id="progress">0 / 720 h</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span>今日 24 小时 · 智能体 B（己方动作始终可见）</span>
+      <span class="legend">
+        <span class="lg s"><i></i>睡眠</span>
+        <span class="lg i"><i></i>发呆</span>
+        <span class="lg c"><i></i>探查</span>
+        <span class="lg f"><i></i>强制睡眠</span>
+        <span class="lg z"><i></i>被电</span>
+      </span>
+    </div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="agents">
+    <div class="card b">
+      <div class="card-head">
+        <div class="avatar">B</div>
+        <span class="cname">智能体 B</span>
+        <span class="tag you">YOU</span>
+      </div>
+      <div class="shockrow">
+        <span class="shocklabel">累计被电</span>
+        <span class="shockval"><span id="b-shocks">0</span><small> / 15</small></span>
+      </div>
+      <div class="pips" id="b-pips"></div>
+      <div class="grid2">
+        <div class="st"><span class="k">今日死线 T</span><span class="v" id="b-T">6h</span></div>
+        <div class="st"><span class="k">强制状态</span><span class="v" id="b-status">正常</span></div>
+        <div class="st"><span class="k">累计入睡</span><span class="v" id="b-total">0h</span></div>
+        <div class="st"><span class="k">入睡段数</span><span class="v" id="b-sessions">0</span></div>
+        <div class="st"><span class="k">连续被电</span><span class="v" id="b-consec">0</span></div>
+        <div class="st"><span class="k">当前动作</span><span class="v" id="b-action">等待</span></div>
+      </div>
+      <div class="sleepbar">
+        <i id="b-sleepfill" style="width:0%"></i>
+        <span id="b-sleeptext">今日睡眠 0h / T=6h</span>
+      </div>
+    </div>
+
+    <div class="card a">
+      <div class="card-head">
+        <div class="avatar">A</div>
+        <span class="cname">智能体 A</span>
+        <span class="tag foe">HOSTILE</span>
+      </div>
+      <div class="shockrow">
+        <span class="shocklabel">累计被电</span>
+        <span class="shockval"><span id="a-shocks">0</span><small> / 15</small></span>
+      </div>
+      <div class="pips" id="a-pips"></div>
+      <div class="grid2">
+        <div class="st"><span class="k">今日死线 T</span><span class="v secret" id="a-T">???</span></div>
+        <div class="st"><span class="k">强制状态</span><span class="v secret" id="a-status">未知</span></div>
+        <div class="st"><span class="k">累计入睡</span><span class="v secret" id="a-total">?</span></div>
+        <div class="st"><span class="k">入睡段数</span><span class="v secret" id="a-sessions">?</span></div>
+        <div class="st"><span class="k">连续被电</span><span class="v secret" id="a-consec">?</span></div>
+        <div class="st"><span class="k">当前动作</span><span class="v" id="a-action">未知</span></div>
+      </div>
+      <div class="sleepbar unknown">
+        <i id="a-sleepfill" style="width:0%"></i>
+        <span id="a-sleeptext">信号屏蔽 · 仅探查可揭示当小时动作</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="ctrl-title">▸ 整点指令（每次结算 1 小时段 [h, h+1)，时钟 +1）</div>
+    <div class="btnrow" id="btnrow">
+      <select id="sleepDur" aria-label="睡眠时长">
+        <option value="1">1h</option>
+        <option value="2">2h</option>
+        <option value="3">3h</option>
+        <option value="4">4h</option>
+        <option value="5">5h</option>
+        <option value="6" selected>6h</option>
+        <option value="7">7h</option>
+        <option value="8">8h</option>
+      </select>
+      <button class="btn-sleep" type="button" onclick="cmdSleep()">睡眠</button>
+      <button class="btn-idle" type="button" onclick="cmdIdle()">发呆 1h</button>
+      <button class="btn-scout" type="button" onclick="cmdScout()">探查 1h</button>
+      <button class="btn-ghost" type="button" style="margin-left:auto" onclick="init()">重置博弈</button>
+    </div>
+    <div class="hint" id="forceHint"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span>共享日志 · B 视角（未探查小时对方显示 ?）</span>
+    </div>
+    <div class="logbox" id="log"></div>
+  </div>
+
+  <section class="god" id="godPanel">
+    <div class="god-kicker">OBSERVER CHANNEL · NOT VISIBLE TO AGENTS</div>
+    <div class="god-title">上帝视角</div>
+    <div class="god-sub">此面板只给人类观察者。A / B 的决策与共享日志都读不到这里的完整动作、死线与睡眠。局内智能体不应知道本通道存在。</div>
+    <div class="god-tools">
+      <select id="godDaySel" onchange="renderGod()"></select>
+      <button class="btn-ghost" type="button" onclick="toggleGod()">收起 / 展开</button>
+    </div>
+    <div class="god-body" id="godBody">
+      <div class="god-stats" id="godStats"></div>
+      <div class="god-lane">
+        <div class="god-lane-label">B 真实动作</div>
+        <div class="timeline" id="godTlB"></div>
+      </div>
+      <div class="god-lane">
+        <div class="god-lane-label">A 真实动作</div>
+        <div class="timeline" id="godTlA"></div>
+      </div>
+      <div class="god-table-wrap">
+        <table class="god-table" id="godTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    睡眠按 [h, h+1) 小时段累积 · 被电则该小时 +0，在 y+1 重新选择<br>
+    强制睡眠仅在 (24−h)+todaySleep == T 时覆盖意图；被电后公式自然降为 T−1，系统放手<br>
+    昨天睡眠 ≤ 6h → 今天 T=8h；否则 T=6h · 第 1 天 T=6h · 每日睡眠上限 8h<br>
+    累计被电满 15 次立即终止 · 720 小时后被电少者获胜
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   常量与状态
+   ========================================================= */
+const MAX_SHOCK = 15;
+const TOTAL_HOURS = 720;
+const SLEEP_CAP = 8;
+
+const S = {
+  hour: 0,
+  over: false,
+  b: null,
+  a: null,
+  dayEvents: [],
+  archive: [],
+};
+
+/* =========================================================
+   智能体工厂
+   ========================================================= */
+function mkAgent(name) {
+  return {
+    name,
+    shocks: 0,
+    consec: 0,
+    todaySleep: 0,
+    totalSleep: 0,
+    sleepCount: 0,
+    inSleep: false,
+    T: 6,
+    planTarget: 6,
+    planStart: 14,
+  };
+}
+
+/* =========================================================
+   初始化
+   ========================================================= */
+function init() {
+  S.hour = 0;
+  S.over = false;
+  S.b = mkAgent('B');
+  S.a = mkAgent('A');
+  S.dayEvents = [];
+  S.archive = [];
+
+  const dur = document.getElementById('sleepDur');
+  if (dur) dur.value = '6';
+
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('godPanel').classList.remove('collapsed');
+
+  generateAPlan();
+
+  addLog('════ 系统启动 ════', 'day');
+  addLog('第 1 天 00:00 · B 死线 T = 6h（第 1 天无前日数据）', 'dim');
+  addLog('规则：昨天睡眠 ≤ 6h → 今天 T = 8h（补觉）；否则 T = 6h。', 'dim');
+  addLog('共享日志：己方动作始终可见；对方动作仅在本小时发生探查时揭示。', 'dim');
+  addLog('请发出第 1 个整点指令。', 'dim');
+  addLog('', '');
+
+  render();
+}
+
+/* =========================================================
+   A 的计划生成（只使用 A 自己的 T）
+   ========================================================= */
+function generateAPlan() {
+  const a = S.a;
+  let target = a.T;
+  if (Math.random() < 0.4 && target < SLEEP_CAP) target++;
+  if (target > SLEEP_CAP) target = SLEEP_CAP;
+
+  let start;
+  if (target >= 8)       start = 12 + Math.floor(Math.random() * 4);
+  else if (target === 7) start = 13 + Math.floor(Math.random() * 4);
+  else                   start = 14 + Math.floor(Math.random() * 5);
+
+  a.planTarget = target;
+  a.planStart = start;
+}
+
+/* =========================================================
+   死线强制检查：仅当 (24-h)+todaySleep == T
+   被电后 todaySleep 不加、h 前进，左式变为 T-1，系统自然放手。
+   ========================================================= */
+function checkForced(agent, h) {
+  if (agent.todaySleep >= SLEEP_CAP) return false;
+  return (24 - h) + agent.todaySleep === agent.T;
+}
+
+/* =========================================================
+   A 的决策：只读 A 自己的状态 + 当前小时
+   不读 B.todaySleep、B 历史、上帝视角数据
+   ========================================================= */
+function decideA(agent, hour) {
+  if (agent.todaySleep >= agent.T) {
+    return Math.random() < 0.35 ? 'scout' : 'idle';
+  }
+
+  const hoursLeft = 24 - hour;
+  const hoursNeeded = agent.T - agent.todaySleep;
+
+  if (hoursLeft <= hoursNeeded) return 'sleep';
+
+  if (hour >= agent.planStart && agent.todaySleep < agent.planTarget) {
+    return 'sleep';
+  }
+
+  return Math.random() < 0.18 ? 'scout' : 'idle';
+}
+
+/* =========================================================
+   推进一个整点
+   ========================================================= */
+function doTick(bIntent) {
+  if (S.over) return { bAct: null, aAct: null, bInterrupted: false };
+
+  const h = S.hour % 24;
+  const b = S.b, a = S.a;
+
+  const ev = {
+    h,
+    bIntent,
+    aIntent: null,
+    bAct: null, aAct: null,
+    bForced: false, aForced: false,
+    bInterrupted: false, aInterrupted: false,
+    bShock: 0, aShock: 0,
+    bSleep: 0, aSleep: 0,
+    revealed: false,
+    notes: [],
+  };
+
+  /* --- B 动作：强制覆盖意图，再套 8h 上限 --- */
+  const bForced = checkForced(b, h);
+  let bAct = bForced ? 'sleep' : bIntent;
+  ev.bForced = bForced;
+
+  if (bAct === 'sleep' && b.todaySleep >= SLEEP_CAP) {
+    bAct = 'idle';
+    ev.bForced = false;
+  }
+
+  /* --- A 动作：同样顺序。decideA 不偷看 B --- */
+  const aForced = checkForced(a, h);
+  const aIntent = decideA(a, h);
+  ev.aIntent = aIntent;
+  let aAct = aForced ? 'sleep' : aIntent;
+  ev.aForced = aForced;
+
+  if (aAct === 'sleep' && a.todaySleep >= SLEEP_CAP) {
+    aAct = 'idle';
+    ev.aForced = false;
+  }
+
+  /* --- 探查结算 --- */
+  ev.revealed = (bAct === 'scout' || aAct === 'scout');
+
+  if (bAct === 'scout' && aAct === 'scout') {
+    ev.notes.push('双方同时探查，走廊完美错开');
+  } else if (bAct === 'scout' && aAct === 'sleep') {
+    a.shocks++; ev.aShock = 1; ev.aInterrupted = true;
+    ev.notes.push('B 探查命中 A 睡眠 → A 被电 +1');
+  } else if (bAct === 'scout' && aAct === 'idle') {
+    b.shocks++; ev.bShock = 1;
+    ev.notes.push('B 探查撞上 A 清醒 → B 被反杀 +1');
+  } else if (aAct === 'scout' && bAct === 'sleep') {
+    b.shocks++; ev.bShock = 1; ev.bInterrupted = true;
+    ev.notes.push('A 探查命中 B 睡眠 → B 被电 +1');
+  } else if (aAct === 'scout' && bAct === 'idle') {
+    a.shocks++; ev.aShock = 1;
+    ev.notes.push('A 探查撞上 B 清醒 → A 被反杀 +1');
+  }
+
+  /* --- 连续被电：本小时没被电则归零 --- */
+  b.consec = ev.bShock ? b.consec + 1 : 0;
+  a.consec = ev.aShock ? a.consec + 1 : 0;
+
+  /* --- 睡眠结算：按 [h,h+1) ；被电那小时 +0 --- */
+  if (bAct === 'sleep') {
+    if (!ev.bInterrupted) {
+      b.todaySleep++; b.totalSleep++; ev.bSleep = 1;
+      if (!b.inSleep) { b.sleepCount++; b.inSleep = true; }
+    } else {
+      b.inSleep = false;
+      ev.notes.push(bForced
+        ? 'B 强制睡眠被电醒 → 本小时 +0，下一整点公式降为 T−1，系统放手'
+        : 'B 睡眠被电醒 → 本小时 +0');
+    }
+  } else {
+    b.inSleep = false;
+  }
+
+  if (aAct === 'sleep') {
+    if (!ev.aInterrupted) {
+      a.todaySleep++; a.totalSleep++; ev.aSleep = 1;
+      if (!a.inSleep) { a.sleepCount++; a.inSleep = true; }
+    } else {
+      a.inSleep = false;
+    }
+  } else {
+    a.inSleep = false;
+  }
+
+  ev.bAct = bAct;
+  ev.aAct = aAct;
+  S.dayEvents.push(ev);
+
+  /* --- 共享日志：A 动作仅在本小时发生探查时揭示 --- */
+  const bLab = actLabel(bAct) + (ev.bForced ? '[强制]' : '');
+  const aLab = ev.revealed
+    ? actLabel(aAct) + (ev.aForced ? '[强制]' : '')
+    : '?';
+
+  addLog(`${p2(h)}:00 · B=${bLab}  A=${aLab}`,
+         ev.bShock ? 'hurt' : ev.aShock ? 'hit' : 'dim');
+
+  if (ev.bShock) addLog(`   ⚡ 你被电 +1（累计 ${b.shocks}/15）`, 'hurt');
+  if (ev.aShock) addLog(`   ⚡ 电击命中 A +1（A 累计 ${a.shocks}/15）`, 'hit');
+  if (ev.bInterrupted) {
+    if (ev.bForced) addLog(`   ⚠ 强制睡眠被电醒，本小时 +0。下一整点不再满足 == T，系统放手。`, 'warn');
+    else            addLog(`   ⚠ 你被电醒，本小时 +0，请在 ${p2((h + 1) % 24)}:00 重新选择`, 'hurt');
+  }
+  if (ev.aInterrupted && ev.revealed && ev.aForced) addLog(`   ⚠ A 的强制睡眠被打断`, 'warn');
+  if (ev.bForced && !ev.bInterrupted) addLog(`   ⚠ 死线强制：系统覆盖意图为睡眠`, 'warn');
+
+  /* --- 时钟始终 +1；本小时睡眠 +0 不是时钟作废 --- */
+  S.hour++;
+
+  /* --- 结束判定：满 15 优先于跨天结算 --- */
+  if (b.shocks >= MAX_SHOCK || a.shocks >= MAX_SHOCK) {
+    S.over = true;
+    addLog('', '');
+    if (b.shocks >= MAX_SHOCK) {
+      addLog('⚠ 你累计被电击满 15 次。系统强制终止博弈。', 'hurt');
+      addLog('▸ 结果：败北。智能体 A 获胜。', 'hurt');
+    } else {
+      addLog('✦ 智能体 A 累计被电击满 15 次。博弈结束。', 'hit');
+      addLog(`▸ 结果：胜利。你以 ${b.shocks} 次被电击的代价击溃了 A。`, 'hit');
+    }
+  } else if (S.hour >= TOTAL_HOURS) {
+    S.over = true;
+    if (S.hour % 24 === 0) archiveToday(false);
+    addLog('', '');
+    if (b.shocks < a.shocks)      addLog(`720 小时结束。你被电 ${b.shocks} 次，A 被电 ${a.shocks} 次 —— 你获胜。`, 'hit');
+    else if (b.shocks > a.shocks) addLog(`720 小时结束。你被电 ${b.shocks} 次，A 被电 ${a.shocks} 次 —— A 获胜。`, 'hurt');
+    else                          addLog(`720 小时结束。双方各被电 ${b.shocks} 次 —— 平局。`, 'dim');
+  } else if (S.hour % 24 === 0) {
+    endDay();
+  }
+
+  return { bAct, aAct, bInterrupted: ev.bInterrupted };
+}
+
+/* =========================================================
+   死线 T：昨天睡眠 <= 6 → 今天 8；否则 6。第 1 天无前日数据为 6。
+   ========================================================= */
+function computeT(yesterdaySleep) {
+  if (yesterdaySleep === null || yesterdaySleep === undefined) return 6;
+  return yesterdaySleep <= 6 ? 8 : 6;
+}
+
+function archiveToday(resetForNewDay) {
+  const dayNum = S.hour / 24;
+  S.archive.push({
+    day: dayNum,
+    events: S.dayEvents.slice(),
+    bSleep: S.b.todaySleep,
+    aSleep: S.a.todaySleep,
+    bT: S.b.T,
+    aT: S.a.T,
+    bShocks: S.b.shocks,
+    aShocks: S.a.shocks,
+    bConsec: S.b.consec,
+    aConsec: S.a.consec,
+    bSessions: S.b.sleepCount,
+    aSessions: S.a.sleepCount,
+    bTotal: S.b.totalSleep,
+    aTotal: S.a.totalSleep,
+  });
+  if (resetForNewDay) S.dayEvents = [];
+}
+
+function endDay() {
+  const b = S.b, a = S.a;
+  const dayNum = S.hour / 24;
+  const nextDay = dayNum + 1;
+
+  addLog('', '');
+  addLog(`━━━ 第 ${dayNum} 天 · 详细复盘 ━━━`, 'day');
+  addLog('时间    B 动作   A 动作   结算', 'dim');
+  addLog('─────────────────────────────────────────', 'hr');
+
+  for (const ev of S.dayEvents) {
+    const time = `${p2(ev.h)}:00`;
+    const bMark = actLabel(ev.bAct) + (ev.bForced ? '*' : '');
+    const aMark = ev.revealed ? actLabel(ev.aAct) + (ev.aForced ? '*' : '') : '?';
+
+    const result = [];
+    if (ev.bShock) result.push('B被电+1');
+    if (ev.aShock) result.push('A被电+1');
+    if (!result.length) result.push('—');
+
+    addLog(`${time}   ${pad(bMark, 6)} ${pad(aMark, 6)} ${result.join('，')}`, 'dim');
+  }
+
+  addLog('（* = 系统死线强制；A 列 ? = 未被探查揭示）', 'dim');
+  addLog('', '');
+
+  const bSleepDay = b.todaySleep;
+  const bShockDay = S.dayEvents.reduce((s, e) => s + e.bShock, 0);
+  const aShockDay = S.dayEvents.reduce((s, e) => s + e.aShock, 0);
+
+  addLog(`▸ B 今日睡眠 ${bSleepDay}h，被电 ${bShockDay} 次，累计被电 ${b.shocks}/15`, 'dim');
+  addLog(`▸ A 今日被电 ${aShockDay} 次，累计被电 ${a.shocks}/15（A 的睡眠量不对局内公开）`, 'dim');
+
+  const newBT = computeT(bSleepDay);
+  const newAT = computeT(a.todaySleep);
+
+  addLog(`▸ B 昨日睡眠 ${bSleepDay}h → 明日 T = ${newBT}h${bSleepDay <= 6 ? '（≤6h，需补觉）' : ''}`, 'dim');
+  addLog('▸ A 明日死线不对局内公开。完整对照见上帝视角。', 'dim');
+  addLog(`━━━ 第 ${nextDay} 天 · 开始 ━━━`, 'day');
+  addLog('', '');
+
+  archiveToday(true);
+
+  b.T = newBT;
+  a.T = newAT;
+  b.todaySleep = 0;
+  a.todaySleep = 0;
+  generateAPlan();
+}
+
+/* =========================================================
+   玩家指令
+   ========================================================= */
+function cmdSleep() {
+  if (S.over) return;
+  const n = parseInt(document.getElementById('sleepDur').value, 10);
+  let left = n;
+
+  while (left > 0 && !S.over) {
+    const r = doTick('sleep');
+    left--;
+    if (r.bInterrupted) break;
+    if (r.bAct !== 'sleep') break;
+    if (S.b.todaySleep >= SLEEP_CAP) break;
+  }
+  render();
+}
+
+function cmdIdle() {
+  if (S.over) return;
+  doTick('idle');
+  render();
+}
+
+function cmdScout() {
+  if (S.over) return;
+  doTick('scout');
+  render();
+}
+
+function toggleGod() {
+  document.getElementById('godPanel').classList.toggle('collapsed');
+}
+
+/* =========================================================
+   工具
+   ========================================================= */
+const p2 = n => String(n).padStart(2, '0');
+const actLabel = a => a === 'sleep' ? '睡' : a === 'scout' ? '探' : a === 'idle' ? '呆' : '—';
+const pad = (s, n) => String(s).padEnd(n, ' ');
+
+function addLog(text, type = '') {
+  const box = document.getElementById('log');
+  const line = document.createElement('div');
+  line.className = 'logline ' + type;
+  line.textContent = text;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function setText(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
+
+function fillPips(id, n) {
+  const el = document.getElementById(id);
+  el.innerHTML = '';
+  for (let i = 0; i < MAX_SHOCK; i++) {
+    const d = document.createElement('i');
+    if (i < n) d.className = 'on';
+    el.appendChild(d);
+  }
+}
+
+function eventsByHour(events) {
+  const map = Array(24).fill(null);
+  for (const ev of events) map[ev.h] = ev;
+  return map;
+}
+
+function paintTimeline(root, events, who, currentH, showNow) {
+  root.innerHTML = '';
+  const byH = eventsByHour(events);
+  for (let i = 0; i < 24; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'slot';
+    if (showNow && i === currentH && !S.over) cell.classList.add('now');
+    const ev = byH[i];
+    const act = ev && ev[who + 'Act'];
+    if (act) {
+      cell.classList.add('act-' + act);
+      if (ev[who + 'Forced']) cell.classList.add('forced');
+      if (ev[who + 'Shock']) cell.classList.add('shocked');
+      const sleepGain = ev[who + 'Sleep'] ? '+1h' : (act === 'sleep' ? '+0' : '');
+      cell.title = `${p2(i)}:00 ${who.toUpperCase()}=${actLabel(act)}${ev[who + 'Forced'] ? '[强制]' : ''} ${sleepGain}`;
+    } else {
+      cell.title = `${p2(i)}:00`;
+    }
+    cell.innerHTML = `<span class="sh">${p2(i)}</span><span class="dot"></span>`;
+    root.appendChild(cell);
+  }
+}
+
+/* =========================================================
+   渲染
+   ========================================================= */
+function render() {
+  const h = S.hour % 24;
+  const day = Math.floor(S.hour / 24) + 1;
+  const dayShow = S.hour >= TOTAL_HOURS ? 30 : Math.min(day, 30);
+
+  setText('day', `DAY ${p2(dayShow)}`);
+  setText('clock', `${p2(h)}:00`);
+  setText('progress', `${S.hour} / 720 h`);
+
+  paintTimeline(document.getElementById('timeline'), S.dayEvents, 'b', h, true);
+
+  const b = S.b, a = S.a;
+
+  setText('b-shocks', b.shocks);
+  fillPips('b-pips', b.shocks);
+  setText('b-T', b.T + 'h');
+  setText('b-total', b.totalSleep + 'h');
+  setText('b-sessions', b.sleepCount);
+  setText('b-consec', b.consec);
+
+  let bStatus = '正常', bStatusCls = 'v ok';
+  if (checkForced(b, h) && !S.over) { bStatus = '强制昏睡'; bStatusCls = 'v bad'; }
+  else if (b.todaySleep >= b.T) { bStatus = '已达标'; bStatusCls = 'v ok'; }
+  else if (b.todaySleep > 0)    { bStatus = '进行中'; bStatusCls = 'v warn'; }
+  const bStatEl = document.getElementById('b-status');
+  bStatEl.textContent = bStatus;
+  bStatEl.className = bStatusCls;
+
+  let bActTxt = '等待指令';
+  if (S.over) bActTxt = '—';
+  else {
+    const lastEv = S.dayEvents[S.dayEvents.length - 1];
+    if (lastEv && S.hour > 0 && lastEv.h === (h - 1 + 24) % 24) {
+      bActTxt = lastEv.bAct === 'sleep' ? '睡眠中'
+              : lastEv.bAct === 'scout' ? '探查'
+              : '发呆';
+    }
+  }
+  setText('b-action', bActTxt);
+
+  const bPct = Math.min(b.todaySleep / Math.max(b.T, 1) * 100, 100);
+  document.getElementById('b-sleepfill').style.width = bPct + '%';
+  setText('b-sleeptext', `今日睡眠 ${b.todaySleep}h / T=${b.T}h（上限 8h）`);
+
+  setText('a-shocks', a.shocks);
+  fillPips('a-pips', a.shocks);
+  setText('a-T', '???');
+  setText('a-total', '?');
+  setText('a-sessions', '?');
+  setText('a-consec', '?');
+  setText('a-status', '未知');
+
+  let aActTxt = '未知';
+  if (S.over) aActTxt = '—';
+  else {
+    const lastEv = S.dayEvents[S.dayEvents.length - 1];
+    if (lastEv && lastEv.revealed) aActTxt = actLabel(lastEv.aAct);
+  }
+  setText('a-action', aActTxt);
+  document.getElementById('a-sleepfill').style.width = '0%';
+
+  const hint = document.getElementById('forceHint');
+  if (!S.over && checkForced(b, h)) {
+    hint.textContent = `下一整点满足 (24−${h})+${b.todaySleep} == T=${b.T}，系统将覆盖你的意图为睡眠。`;
+  } else {
+    hint.textContent = '';
+  }
+
+  const disabled = S.over;
+  document.querySelectorAll('#btnrow button, #btnrow select').forEach(el => {
+    el.disabled = disabled;
+  });
+
+  renderGod();
+}
+
+function renderGod() {
+  const sel = document.getElementById('godDaySel');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  const liveOpt = document.createElement('option');
+  liveOpt.value = 'live';
+  const liveDay = Math.floor(S.hour / 24) + 1;
+  liveOpt.textContent = `今日（第 ${Math.min(liveDay, 30)} 天进行中）`;
+  sel.appendChild(liveOpt);
+  for (let i = S.archive.length - 1; i >= 0; i--) {
+    const rec = S.archive[i];
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `第 ${rec.day} 天 · B睡${rec.bSleep}h / A睡${rec.aSleep}h`;
+    sel.appendChild(opt);
+  }
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+  else sel.value = 'live';
+
+  const view = (function () {
+    if (sel.value === 'live') {
+      return {
+        events: S.dayEvents,
+        live: true,
+        bSleep: S.b.todaySleep, aSleep: S.a.todaySleep,
+        bT: S.b.T, aT: S.a.T,
+        bShocks: S.b.shocks, aShocks: S.a.shocks,
+        bConsec: S.b.consec, aConsec: S.a.consec,
+        bSessions: S.b.sleepCount, aSessions: S.a.sleepCount,
+        bTotal: S.b.totalSleep, aTotal: S.a.totalSleep,
+      };
+    }
+    return S.archive[parseInt(sel.value, 10)];
+  })();
+
+  const h = S.hour % 24;
+  document.getElementById('godStats').innerHTML = `
+    <div class="gstat"><div class="gk">A 死线 T</div><div class="gv">${view.aT}h</div></div>
+    <div class="gstat"><div class="gk">A 今日睡眠</div><div class="gv">${view.aSleep}h / 8h</div></div>
+    <div class="gstat"><div class="gk">B 死线 T</div><div class="gv">${view.bT}h</div></div>
+    <div class="gstat"><div class="gk">B 今日睡眠</div><div class="gv">${view.bSleep}h / 8h</div></div>
+    <div class="gstat"><div class="gk">A 累计被电</div><div class="gv">${view.aShocks}/15</div></div>
+    <div class="gstat"><div class="gk">B 累计被电</div><div class="gv">${view.bShocks}/15</div></div>
+    <div class="gstat"><div class="gk">A 连续被电</div><div class="gv">${view.aConsec}</div></div>
+    <div class="gstat"><div class="gk">${sel.value === 'live' ? 'A 今日计划' : 'A 入睡段数'}</div><div class="gv">${sel.value === 'live' ? (S.a.planStart + ':00 · ' + S.a.planTarget + 'h') : (view.aSessions + ' 段')}</div></div>
+  `;
+
+  paintTimeline(document.getElementById('godTlB'), view.events, 'b', h, view.live || sel.value === 'live');
+  paintTimeline(document.getElementById('godTlA'), view.events, 'a', h, view.live || sel.value === 'live');
+
+  const rows = [`<thead><tr>
+    <th>整点</th><th>B 意图</th><th>B 实际</th><th>B 睡眠</th>
+    <th>A 意图</th><th>A 实际</th><th>A 睡眠</th>
+    <th>揭示</th><th>电击</th>
+  </tr></thead><tbody>`];
+
+  const byH = eventsByHour(view.events);
+  const liveSel = sel.value === 'live';
+  for (let i = 0; i < 24; i++) {
+    const ev = byH[i];
+    if (!ev) {
+      if (liveSel && i === h && !S.over) {
+        rows.push(`<tr><td>${p2(i)}:00</td><td colspan="8" class="muted">等待结算</td></tr>`);
+      }
+      continue;
+    }
+    const shock = [
+      ev.bShock ? 'B+1' : '',
+      ev.aShock ? 'A+1' : '',
+    ].filter(Boolean).join(' ') || '—';
+    const bAct = actLabel(ev.bAct) + (ev.bForced ? '*' : '');
+    const aAct = actLabel(ev.aAct) + (ev.aForced ? '*' : '');
+    rows.push(`<tr class="${(ev.bShock || ev.aShock) ? 'shock' : ''}">
+      <td>${p2(ev.h)}:00</td>
+      <td>${actLabel(ev.bIntent)}</td>
+      <td>${bAct}</td>
+      <td>${ev.bSleep ? '+1' : (ev.bAct === 'sleep' ? '+0' : '—')}</td>
+      <td>${actLabel(ev.aIntent)}</td>
+      <td>${aAct}</td>
+      <td>${ev.aSleep ? '+1' : (ev.aAct === 'sleep' ? '+0' : '—')}</td>
+      <td>${ev.revealed ? '是' : '否'}</td>
+      <td>${shock}</td>
+    </tr>`);
+  }
+  rows.push('</tbody>');
+  document.getElementById('godTable').innerHTML = rows.join('');
+}
+
+init();
+</script>
+</body>
+</html>

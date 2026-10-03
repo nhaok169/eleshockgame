@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>作息博弈 · 座位</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="hud">
+    <div class="brand">
+      <div class="t1" id="title">智能体</div>
+      <div class="t2" id="subtitle">局域网座位 · 对方动作未探查为 ?</div>
+    </div>
+    <div>
+      <div class="daytag" id="day">DAY 01</div>
+      <div class="bigclock" id="clock">00:00</div>
+      <div class="prog" id="progress">0 / 720 h</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span>今日 24 小时 · 只显示你自己的动作</span></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="card">
+    <div class="shockrow">
+      <span>你的累计被电</span>
+      <span class="shockval"><span id="you-shocks">0</span><small> / 15</small></span>
+    </div>
+    <div class="pips" id="you-pips"></div>
+    <div class="grid2">
+      <div class="st"><span class="k">今日死线 T</span><span class="v" id="you-T">6h</span></div>
+      <div class="st"><span class="k">强制状态</span><span class="v" id="you-status">正常</span></div>
+      <div class="st"><span class="k">累计入睡</span><span class="v" id="you-total">0h</span></div>
+      <div class="st"><span class="k">入睡段数</span><span class="v" id="you-sessions">0</span></div>
+      <div class="st"><span class="k">连续被电</span><span class="v" id="you-consec">0</span></div>
+      <div class="st"><span class="k">对方被电</span><span class="v" id="foe-shocks">0 / 15</span></div>
+    </div>
+    <div class="sleepbar">
+      <i id="you-fill" style="width:0%"></i>
+      <span id="you-sleeptext">今日睡眠 0h / T=6h</span>
+    </div>
+    <div class="st" style="margin-top:8px">
+      <span class="k">对方当前动作</span>
+      <span class="v secret" id="foe-act">未知</span>
+    </div>
+  </div>
+
+  <div class="status" id="waitStatus">正在加入房间…</div>
+
+  <div class="panel" id="controls">
+    <div class="panel-head"><span>锁定本小时意图（双方锁定后同时结算）</span></div>
+    <div class="btnrow">
+      <select id="sleepDur" aria-label="睡眠时长">
+        <option value="1">1h</option>
+        <option value="2">2h</option>
+        <option value="3">3h</option>
+        <option value="4">4h</option>
+        <option value="5">5h</option>
+        <option value="6" selected>6h</option>
+        <option value="7">7h</option>
+        <option value="8">8h</option>
+      </select>
+      <button class="btn-sleep" type="button" id="btnSleep">睡眠</button>
+      <button class="btn-idle" type="button" id="btnIdle">发呆 1h</button>
+      <button class="btn-scout" type="button" id="btnScout">探查 1h</button>
+    </div>
+    <p class="hint" id="forceHint"></p>
+    <p class="err" id="err"></p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span>你的日志 · 系统判决</span></div>
+    <div class="logbox" id="log"></div>
+  </div>
+</div>
+<script src="/play.js"></script>
+</body>
+</html>

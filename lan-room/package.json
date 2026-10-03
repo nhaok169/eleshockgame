@@ -1,0 +1,8 @@
+{
+  "name": "sleep-gambit-lan-room",
+  "private": true,
+  "description": "局域网双人房：电脑当服务器，两部手机用浏览器入座",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
